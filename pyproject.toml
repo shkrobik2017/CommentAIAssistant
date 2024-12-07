@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "commentassist"
+version = "0.1.0"
+description = ""
+authors = ["shkrobik2017 <shkrobik2017@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+celery = "^5.4.0"
+redis = "^5.2.0"
+fastapi = "^0.115.5"
+beanie = "^1.27.0"
+motor = "^3.6.0"
+uvicorn = "^0.32.1"
+ollama = "^0.4.1"
+langchain-ollama = "^0.2.0"
+langchain = "^0.3.8"
+pydantic = "^2.10.2"
+pydantic-settings = "^2.6.1"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.19"
+pyjwt = "^2.10.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
