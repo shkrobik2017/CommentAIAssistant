@@ -2,6 +2,7 @@ from fastapi import APIRouter, status, HTTPException, Depends
 from celery_app.tasks import generate_comments
 from db.db_models import ArticleModel, UserModel
 from db.db_services import UUIDStr
+from logger.logger import logger
 from models.response_models import ArticleResponseModel
 from routers.services import get_current_user
 
@@ -18,6 +19,7 @@ async def upload_articles(
         current_user: UserModel = Depends(get_current_user)
 ) -> ArticleResponseModel:
     if len(content) == 0:
+        logger.error(f"Uploaded article not found: {content}")
         raise HTTPException(
             status_code=400,
             detail={"BadRequest": f"Article not found"}
@@ -28,13 +30,9 @@ async def upload_articles(
         content=content
     )
     await article.create()
-    try:
-        generate_comments.delay(str(article.id), content)
-    except HTTPException as ex:
-        raise HTTPException(
-            status_code=500,
-            detail={"Eternal error": f"Something went wrong: {ex}"}
-        )
+    logger.info(f"Article created successfully: {article}")
+
+    generate_comments.delay(str(article.id), content)
 
     response = ArticleResponseModel(
         id=article.id,
@@ -54,9 +52,10 @@ async def get_article_status(
         current_user: UserModel = Depends(get_current_user)
 ) -> ArticleResponseModel:
     if current_user is None:
+        logger.error(f"User {current_user} is not authorized!")
         raise HTTPException(
             status_code=401,
-            detail={"Unauthorized": "User is not authorized"}
+            detail={"Unauthorized": "User is not authorized!"}
         )
     article = await ArticleModel.get(article_id)
     if article is not None:
@@ -68,6 +67,7 @@ async def get_article_status(
 
         return response
     else:
+        logger.error(f"Article with id: {article_id} not found")
         raise HTTPException(
             status_code=404,
             detail={"Not found": "Article not found"}

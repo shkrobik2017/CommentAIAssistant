@@ -1,5 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM
+
+from logger.logger import logger
 from settings import settings
 
 
@@ -17,6 +19,11 @@ class CommentAgent:
             return ChatPromptTemplate.from_template(file.read())
 
     async def generate_comment(self, content: str):
-        chain = self.prompt_template | self.model
-        result = await chain.ainvoke({"article": content})
-        return result
+        try:
+            chain = self.prompt_template | self.model
+            result = await chain.ainvoke({"article": content})
+            logger.info("Comments generated successfully")
+            return result
+        except Exception as ex:
+            logger.error(f"An error occurred in generating comments: {ex}")
+            raise ex

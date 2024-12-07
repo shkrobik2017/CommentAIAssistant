@@ -1,4 +1,7 @@
 import json
+
+from fastapi import HTTPException
+
 from agent.agent import CommentAgent
 from celery_app.config import app_celery
 from db.db_models import CommentModel, ArticleModel
@@ -9,8 +12,14 @@ from logger.logger import logger
 @app_celery.task
 def generate_comments(article_id: str, content: str) -> None:
     import asyncio
-
-    asyncio.run(_generate_comments(article_id, content))
+    try:
+        asyncio.run(_generate_comments(article_id, content))
+    except HTTPException as ex:
+        logger.error("An error occurred when generate comment.")
+        raise HTTPException(
+            status_code=500,
+            detail={"Eternal error": f"Something went wrong: {ex}"}
+        )
 
 
 async def _generate_comments(article_id: str, content: str) -> None:

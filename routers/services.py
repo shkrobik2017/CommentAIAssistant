@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 
 from db.db_models import UserModel
+from logger.logger import logger
 from models.models import TokenData
 from settings import settings
 
@@ -61,6 +62,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
             raise credentials_exception
         token_data = TokenData(username=username)
     except:
+        logger.error(f"Invalid credentials provided: {token}")
         raise credentials_exception
     user = await get_user(username=token_data.username)
     if user is None:
@@ -72,6 +74,7 @@ async def get_current_active_user(
     current_user: Annotated[UserModel, Depends(get_current_user)],
 ):
     if current_user.is_baned:
+        logger.error(f"User: {current_user} is banned")
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 

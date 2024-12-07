@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+
+from logger.logger import logger
 from routers.articles import router as articles_router
 from routers.comments import router as comments_router
 from routers.auth import router as auth_router
@@ -14,3 +16,4 @@ app.include_router(auth_router, tags=["Authentication Router"])
 @app.on_event("startup")
 async def startup_event() -> None:
     await init_mongodb_beanie()
+    logger.info("MongoDB initialized successfully")
