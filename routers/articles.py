@@ -4,7 +4,7 @@ from db.db_models import ArticleModel, UserModel
 from db.db_services import UUIDStr
 from logger.logger import logger
 from models.response_models import ArticleResponseModel
-from routers.services import get_current_user
+from routers.services import get_current_user, create_article, get_article, check_user_auth
 
 router = APIRouter()
 
@@ -18,18 +18,10 @@ async def upload_articles(
         content: str,
         current_user: UserModel = Depends(get_current_user)
 ) -> ArticleResponseModel:
-    if len(content) == 0:
-        logger.error(f"Uploaded article not found: {content}")
-        raise HTTPException(
-            status_code=400,
-            detail={"BadRequest": f"Article not found"}
-        )
-
-    article = ArticleModel(
-        user_id=current_user.id,
-        content=content
+    article = await create_article(
+        content=content,
+        current_user=current_user
     )
-    await article.create()
     logger.info(f"Article created successfully: {article}")
 
     generate_comments.delay(str(article.id), content)
@@ -51,13 +43,11 @@ async def get_article_status(
         article_id: UUIDStr,
         current_user: UserModel = Depends(get_current_user)
 ) -> ArticleResponseModel:
-    if current_user is None:
-        logger.error(f"User {current_user} is not authorized!")
-        raise HTTPException(
-            status_code=401,
-            detail={"Unauthorized": "User is not authorized!"}
-        )
-    article = await ArticleModel.get(article_id)
+
+    article = await get_article(
+        article_id=article_id,
+        current_user=current_user
+    )
     if article is not None:
         response = ArticleResponseModel(
             id=article.id,

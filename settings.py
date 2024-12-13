@@ -79,5 +79,15 @@ class Settings(BaseSettings):
         description="Base URL for your FastAPI app"
     )
 
+    BASE_USER_USERNAME: str = Field(
+        ...,
+        description="Base user username"
+    )
+
+    BASE_USER_PASSWORD: str = Field(
+        ...,
+        description="Base user password"
+    )
+
 
 settings = Settings()

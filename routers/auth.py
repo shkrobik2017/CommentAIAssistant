@@ -17,7 +17,7 @@ router = APIRouter()
     path="/signup"
 )
 async def signup(user: UserModel) -> dict:
-    if await get_user(user.username) is not None:
+    if await get_user(username=user.username) is not None:
         logger.error(f"User {user.username} already registered")
         raise HTTPException(
             status_code=400,
@@ -25,7 +25,7 @@ async def signup(user: UserModel) -> dict:
         )
 
     try:
-        hashed_pass = get_password_hash(user.password)
+        hashed_pass = get_password_hash(password=user.password)
     except Exception as ex:
         logger.error("An error occurred in hashing password")
         raise ex
@@ -49,7 +49,10 @@ async def signup(user: UserModel) -> dict:
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
-    user = await authenticate_user(form_data.username, form_data.password)
+    user = await authenticate_user(
+        username=form_data.username,
+        password=form_data.password
+    )
     if not user:
         logger.error("Incorrect input username or password")
         raise HTTPException(
